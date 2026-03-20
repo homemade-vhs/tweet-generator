@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tweet Screenshot Generator</title>
+<title>Fake Screenshot Generator</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Roboto:wght@400;500;700;900&family=CNN:wght@700;900&display=swap');
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -20,16 +20,33 @@
     padding: 30px 20px;
   }
 
-  h1 {
-    font-size: 24px;
-    margin-bottom: 6px;
-    color: #fff;
+  h1 { font-size: 24px; margin-bottom: 6px; color: #fff; }
+  .subtitle { color: #888; font-size: 14px; margin-bottom: 20px; }
+
+  /* ── Template Picker ── */
+  .template-picker {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    justify-content: center;
   }
-  .subtitle {
-    color: #888;
+  .template-btn {
+    padding: 10px 22px;
+    border-radius: 30px;
+    border: 2px solid #333;
+    background: transparent;
+    color: #aaa;
     font-size: 14px;
-    margin-bottom: 30px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
   }
+  .template-btn:hover { border-color: #555; color: #fff; }
+  .template-btn.active-tweet { border-color: #1da1f2; color: #1da1f2; background: #1da1f215; }
+  .template-btn.active-tmz { border-color: #f5c518; color: #f5c518; background: #f5c51815; }
+  .template-btn.active-cnn { border-color: #cc0000; color: #cc0000; background: #cc000015; }
 
   .app {
     display: flex;
@@ -37,7 +54,7 @@
     flex-wrap: wrap;
     justify-content: center;
     width: 100%;
-    max-width: 1100px;
+    max-width: 1200px;
   }
 
   /* ── Controls Panel ── */
@@ -52,7 +69,6 @@
     flex-direction: column;
     gap: 16px;
   }
-
   .controls h2 {
     font-size: 16px;
     color: #1da1f2;
@@ -60,14 +76,13 @@
     padding-bottom: 8px;
     margin-bottom: 4px;
   }
+  .controls.tmz-mode h2 { color: #f5c518; border-bottom-color: #f5c51833; }
+  .controls.cnn-mode h2 { color: #cc0000; border-bottom-color: #cc000033; }
 
   .field { display: flex; flex-direction: column; gap: 4px; }
   .field label {
-    font-size: 12px;
-    font-weight: 500;
-    color: #aaa;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-size: 12px; font-weight: 500; color: #aaa;
+    text-transform: uppercase; letter-spacing: 0.5px;
   }
   .field input, .field textarea, .field select {
     background: #0f3460;
@@ -80,408 +95,583 @@
     outline: none;
     transition: border-color 0.2s;
   }
-  .field input:focus, .field textarea:focus {
-    border-color: #1da1f2;
-  }
+  .field input:focus, .field textarea:focus { border-color: #1da1f2; }
   .field textarea { resize: vertical; min-height: 70px; }
 
   .row { display: flex; gap: 12px; }
   .row .field { flex: 1; }
 
-  .toggle-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
+  .toggle-row { display: flex; align-items: center; gap: 10px; }
   .toggle-row label { font-size: 13px; color: #ccc; cursor: pointer; }
   .toggle {
-    position: relative;
-    width: 42px; height: 24px;
-    background: #333;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: background 0.2s;
-    flex-shrink: 0;
+    position: relative; width: 42px; height: 24px;
+    background: #333; border-radius: 12px;
+    cursor: pointer; transition: background 0.2s; flex-shrink: 0;
   }
   .toggle.active { background: #1da1f2; }
   .toggle::after {
-    content: '';
-    position: absolute;
-    top: 3px; left: 3px;
-    width: 18px; height: 18px;
-    background: #fff;
-    border-radius: 50%;
-    transition: transform 0.2s;
+    content: ''; position: absolute; top: 3px; left: 3px;
+    width: 18px; height: 18px; background: #fff;
+    border-radius: 50%; transition: transform 0.2s;
   }
   .toggle.active::after { transform: translateX(18px); }
 
   .file-btn {
-    display: inline-block;
-    background: #1da1f2;
-    color: #fff;
-    padding: 8px 14px;
-    border-radius: 8px;
-    font-size: 13px;
-    cursor: pointer;
-    text-align: center;
-    transition: background 0.2s;
+    display: inline-block; background: #1da1f2; color: #fff;
+    padding: 8px 14px; border-radius: 8px; font-size: 13px;
+    cursor: pointer; text-align: center; transition: background 0.2s;
   }
   .file-btn:hover { background: #0d8ecf; }
   .file-btn input[type="file"] { display: none; }
 
   .remove-btn {
-    background: none;
-    border: 1px solid #e0245e55;
-    color: #e0245e;
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-size: 12px;
-    cursor: pointer;
-    margin-left: 8px;
+    background: none; border: 1px solid #e0245e55; color: #e0245e;
+    padding: 6px 12px; border-radius: 8px; font-size: 12px;
+    cursor: pointer; margin-left: 8px;
   }
-
   .btn-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+  .template-controls { display: none; }
+  .template-controls.active { display: contents; }
 
   /* ── Preview Panel ── */
   .preview-area {
-    flex: 1;
-    min-width: 320px;
-    max-width: 600px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
+    flex: 1; min-width: 320px; max-width: 660px;
+    display: flex; flex-direction: column; align-items: center; gap: 16px;
   }
-
   .preview-label {
-    font-size: 13px;
-    color: #888;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    align-self: flex-start;
+    font-size: 13px; color: #888; text-transform: uppercase;
+    letter-spacing: 1px; align-self: flex-start;
   }
 
-  /* ── The Tweet ── */
+  .template-preview { display: none; width: 100%; }
+  .template-preview.active { display: block; }
+
+  /* ═══════════ TWEET STYLES ═══════════ */
   .tweet {
-    width: 100%;
-    max-width: 598px;
-    border-radius: 0;
-    padding: 12px 16px;
+    width: 100%; max-width: 598px; padding: 12px 16px;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   }
-  .tweet.dark {
-    background: #000;
-    color: #e7e9ea;
-    border: 1px solid #2f3336;
-  }
-  .tweet.light {
-    background: #fff;
-    color: #0f1419;
-    border: 1px solid #eff3f4;
-  }
-
-  .tweet-header {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
+  .tweet.dark { background: #000; color: #e7e9ea; border: 1px solid #2f3336; }
+  .tweet.light { background: #fff; color: #0f1419; border: 1px solid #eff3f4; }
+  .tweet-header { display: flex; align-items: flex-start; gap: 12px; }
   .tweet-avatar {
-    width: 40px; height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-    flex-shrink: 0;
-    background: #2f3336;
+    width: 40px; height: 40px; border-radius: 50%;
+    object-fit: cover; flex-shrink: 0; background: #2f3336;
   }
-
   .tweet-user-info { flex: 1; min-width: 0; }
-
-  .tweet-name-row {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    flex-wrap: wrap;
-  }
-
-  .tweet-display-name {
-    font-weight: 700;
-    font-size: 15px;
-    line-height: 20px;
-  }
+  .tweet-name-row { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+  .tweet-display-name { font-weight: 700; font-size: 15px; line-height: 20px; }
   .tweet.light .tweet-display-name { color: #0f1419; }
-
-  .tweet-verified {
-    width: 18px; height: 18px;
-    flex-shrink: 0;
-    display: none;
-  }
+  .tweet-verified { width: 18px; height: 18px; flex-shrink: 0; display: none; }
   .tweet-verified.show { display: inline-block; }
-
-  .tweet-handle {
-    font-size: 15px;
-    line-height: 20px;
-  }
+  .tweet-handle { font-size: 15px; line-height: 20px; }
   .tweet.dark .tweet-handle { color: #71767b; }
   .tweet.light .tweet-handle { color: #536471; }
-
-  .tweet-more {
-    margin-left: auto;
-    flex-shrink: 0;
-  }
+  .tweet-more { margin-left: auto; flex-shrink: 0; }
   .tweet.dark .tweet-more svg { color: #71767b; }
   .tweet.light .tweet-more svg { color: #536471; }
-
-  .tweet-body {
-    margin-top: 4px;
-    padding-left: 52px;
-  }
-
-  .tweet-text {
-    font-size: 15px;
-    line-height: 20px;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-  }
-
+  .tweet-body { margin-top: 4px; padding-left: 52px; }
+  .tweet-text { font-size: 15px; line-height: 20px; white-space: pre-wrap; word-wrap: break-word; }
   .tweet-image-wrap {
-    margin-top: 12px;
-    border-radius: 16px;
-    overflow: hidden;
-    border: 1px solid;
-    display: none;
+    margin-top: 12px; border-radius: 16px; overflow: hidden;
+    border: 1px solid; display: none;
   }
   .tweet.dark .tweet-image-wrap { border-color: #2f3336; }
   .tweet.light .tweet-image-wrap { border-color: #cfd9de; }
   .tweet-image-wrap.show { display: block; }
-  .tweet-image-wrap img {
-    width: 100%;
-    display: block;
-    max-height: 510px;
-    object-fit: cover;
-  }
-
-  .tweet-time {
-    margin-top: 12px;
-    font-size: 15px;
-    line-height: 20px;
-  }
+  .tweet-image-wrap img { width: 100%; display: block; max-height: 510px; object-fit: cover; }
+  .tweet-time { margin-top: 12px; font-size: 15px; line-height: 20px; }
   .tweet.dark .tweet-time { color: #71767b; }
   .tweet.light .tweet-time { color: #536471; }
-  .tweet-time a {
-    text-decoration: none;
-  }
+  .tweet-time a { text-decoration: none; }
   .tweet.dark .tweet-time a { color: #71767b; }
   .tweet.light .tweet-time a { color: #536471; }
-
   .tweet-stats {
-    display: flex;
-    margin-top: 12px;
-    padding-top: 12px;
-    gap: 20px;
-    flex-wrap: wrap;
-    font-size: 14px;
-    border-top: 1px solid;
+    display: flex; margin-top: 12px; padding-top: 12px;
+    gap: 20px; flex-wrap: wrap; font-size: 14px; border-top: 1px solid;
   }
   .tweet.dark .tweet-stats { border-color: #2f3336; }
   .tweet.light .tweet-stats { border-color: #eff3f4; }
-
-  .tweet-stat-val {
-    font-weight: 700;
-    font-size: 14px;
-  }
+  .tweet-stat-val { font-weight: 700; font-size: 14px; }
   .tweet.light .tweet-stat-val { color: #0f1419; }
-  .tweet-stat-label {
-    font-weight: 400;
-    font-size: 13px;
-  }
+  .tweet-stat-label { font-weight: 400; font-size: 13px; }
   .tweet.dark .tweet-stat-label { color: #71767b; }
   .tweet.light .tweet-stat-label { color: #536471; }
-
   .tweet-actions {
-    display: flex;
-    justify-content: space-around;
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px solid;
+    display: flex; justify-content: space-around;
+    margin-top: 10px; padding-top: 10px; border-top: 1px solid;
   }
   .tweet.dark .tweet-actions { border-color: #2f3336; }
   .tweet.light .tweet-actions { border-color: #eff3f4; }
-  .tweet-actions svg {
-    width: 22px; height: 22px;
-  }
+  .tweet-actions svg { width: 22px; height: 22px; }
   .tweet.dark .tweet-actions svg { color: #71767b; }
   .tweet.light .tweet-actions svg { color: #536471; }
 
+  /* ═══════════ TMZ STYLES ═══════════ */
+  .tmz-article {
+    width: 100%; max-width: 650px; background: #fff; color: #000;
+    font-family: 'Inter', Helvetica, Arial, sans-serif;
+    overflow: hidden;
+  }
+  .tmz-nav {
+    background: #000; padding: 10px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .tmz-logo {
+    font-family: 'Inter', Impact, sans-serif;
+    font-weight: 900; font-size: 32px; color: #f5c518;
+    letter-spacing: 2px; text-transform: uppercase;
+    line-height: 1;
+  }
+  .tmz-nav-links {
+    display: flex; gap: 16px; font-size: 11px;
+    color: #999; text-transform: uppercase; letter-spacing: 1px;
+  }
+  .tmz-hero-img {
+    width: 100%; max-height: 400px; object-fit: cover;
+    display: block; background: #222;
+  }
+  .tmz-hero-img.hidden { display: none; }
+  .tmz-content { padding: 20px 24px 24px; }
+  .tmz-category {
+    font-size: 11px; font-weight: 700; color: #f5c518;
+    text-transform: uppercase; letter-spacing: 1.5px;
+    margin-bottom: 8px;
+  }
+  .tmz-headline {
+    font-size: 28px; font-weight: 900; line-height: 1.15;
+    color: #000; margin-bottom: 12px;
+    font-family: 'Inter', Impact, sans-serif;
+    text-transform: uppercase;
+  }
+  .tmz-meta {
+    font-size: 12px; color: #999; margin-bottom: 16px;
+    display: flex; gap: 8px; align-items: center;
+  }
+  .tmz-meta-sep { color: #ccc; }
+  .tmz-byline-name { color: #666; font-weight: 500; }
+  .tmz-body-text {
+    font-size: 16px; line-height: 1.7; color: #333;
+    white-space: pre-wrap; word-wrap: break-word;
+  }
+  .tmz-body-text b { color: #000; }
+  .tmz-tags {
+    margin-top: 20px; padding-top: 16px;
+    border-top: 2px solid #f5c518;
+    display: flex; gap: 8px; flex-wrap: wrap;
+  }
+  .tmz-tag {
+    background: #f0f0f0; color: #333; padding: 4px 12px;
+    border-radius: 4px; font-size: 12px; font-weight: 500;
+    text-transform: uppercase;
+  }
+
+  /* ═══════════ CNN STYLES ═══════════ */
+  .cnn-article {
+    width: 100%; max-width: 650px; background: #fff; color: #000;
+    font-family: 'Inter', -apple-system, sans-serif;
+    overflow: hidden;
+  }
+  .cnn-topbar {
+    background: #cc0000; padding: 8px 16px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .cnn-logo {
+    font-weight: 900; font-size: 24px; color: #fff;
+    letter-spacing: 2px;
+  }
+  .cnn-topbar-links {
+    display: flex; gap: 16px; font-size: 12px; color: #ffbaba;
+    font-weight: 500;
+  }
+  .cnn-breaking-banner {
+    background: #cc0000; color: #fff;
+    padding: 8px 20px;
+    display: flex; align-items: center; gap: 12px;
+    font-weight: 700;
+  }
+  .cnn-breaking-banner.hidden { display: none; }
+  .cnn-breaking-tag {
+    background: #fff; color: #cc0000;
+    padding: 3px 10px; border-radius: 3px;
+    font-size: 12px; font-weight: 900;
+    text-transform: uppercase; letter-spacing: 1px;
+    white-space: nowrap;
+  }
+  .cnn-breaking-text {
+    font-size: 15px; line-height: 1.3;
+  }
+  .cnn-hero-img {
+    width: 100%; max-height: 380px;
+    object-fit: cover; display: block; background: #222;
+  }
+  .cnn-hero-img.hidden { display: none; }
+  .cnn-caption {
+    font-size: 12px; color: #777; padding: 6px 24px;
+    font-style: italic; background: #f9f9f9;
+  }
+  .cnn-caption.hidden { display: none; }
+  .cnn-content { padding: 24px; }
+  .cnn-headline {
+    font-size: 32px; font-weight: 900; line-height: 1.15;
+    color: #000; margin-bottom: 14px;
+    font-family: 'Inter', Georgia, serif;
+  }
+  .cnn-byline {
+    font-size: 14px; margin-bottom: 4px;
+  }
+  .cnn-byline-name { font-weight: 700; color: #000; }
+  .cnn-byline-role { color: #888; }
+  .cnn-timestamp {
+    font-size: 13px; color: #999; margin-bottom: 20px;
+  }
+  .cnn-body-text {
+    font-size: 17px; line-height: 1.75; color: #222;
+    white-space: pre-wrap; word-wrap: break-word;
+  }
+  .cnn-body-text p { margin-bottom: 16px; }
+  .cnn-location {
+    font-weight: 700; font-size: 13px; color: #666;
+    letter-spacing: 0.5px;
+  }
+
   /* ── Screenshot button ── */
   .screenshot-btn {
-    background: #1da1f2;
-    color: #fff;
-    border: none;
-    padding: 12px 28px;
-    border-radius: 30px;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
+    background: #1da1f2; color: #fff; border: none;
+    padding: 12px 28px; border-radius: 30px;
+    font-size: 15px; font-weight: 600; cursor: pointer;
     transition: background 0.2s;
   }
   .screenshot-btn:hover { background: #0d8ecf; }
-
-  .tip {
-    font-size: 12px;
-    color: #666;
-    text-align: center;
-  }
+  .tip { font-size: 12px; color: #666; text-align: center; }
 </style>
 </head>
 <body>
-  <h1>Tweet Screenshot Generator</h1>
-  <p class="subtitle">Edit everything, then screenshot or save the image.</p>
+  <h1>Fake Screenshot Generator</h1>
+  <p class="subtitle">Pick a template, edit everything, save as PNG.</p>
+
+  <!-- ── Template Picker ── -->
+  <div class="template-picker">
+    <button class="template-btn active-tweet" data-tpl="tweet" onclick="switchTemplate('tweet')">Tweet / X</button>
+    <button class="template-btn" data-tpl="tmz" onclick="switchTemplate('tmz')">TMZ Article</button>
+    <button class="template-btn" data-tpl="cnn" onclick="switchTemplate('cnn')">CNN Breaking News</button>
+  </div>
 
   <div class="app">
-    <!-- ── Controls ── -->
-    <div class="controls">
-      <h2>Profile</h2>
-      <div class="field">
-        <label>Display Name</label>
-        <input type="text" id="displayName" value="Elon Musk" oninput="render()">
-      </div>
-      <div class="field">
-        <label>Handle (@)</label>
-        <input type="text" id="handle" value="elonmusk" oninput="render()">
-      </div>
-      <div class="field">
-        <label>Profile Picture</label>
-        <div class="btn-row">
-          <label class="file-btn">Upload Photo <input type="file" accept="image/*" id="avatarUpload" onchange="uploadAvatar(event)"></label>
-          <button class="remove-btn" onclick="removeAvatar()">Remove</button>
+    <!-- ══════════ Controls ══════════ -->
+    <div class="controls" id="controlsPanel">
+
+      <!-- ── TWEET CONTROLS ── -->
+      <div class="template-controls active" id="tweetControls">
+        <h2>Profile</h2>
+        <div class="field">
+          <label>Display Name</label>
+          <input type="text" id="displayName" value="Elon Musk" oninput="render()">
         </div>
-      </div>
-      <div class="toggle-row">
-        <div class="toggle active" id="verifiedToggle" onclick="toggleVerified()"></div>
-        <label onclick="toggleVerified()">Verified badge</label>
-      </div>
-      <div class="field">
-        <label>Badge Color</label>
-        <select id="badgeColor" onchange="render()">
-          <option value="#1da1f2">Blue (default)</option>
-          <option value="#e8b230">Gold (org)</option>
-          <option value="#829aab">Grey (gov)</option>
-        </select>
+        <div class="field">
+          <label>Handle (@)</label>
+          <input type="text" id="handle" value="elonmusk" oninput="render()">
+        </div>
+        <div class="field">
+          <label>Profile Picture</label>
+          <div class="btn-row">
+            <label class="file-btn">Upload Photo <input type="file" accept="image/*" id="avatarUpload" onchange="uploadFile(event, 'avatar')"></label>
+            <button class="remove-btn" onclick="removeFile('avatar')">Remove</button>
+          </div>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle active" id="verifiedToggle" onclick="toggleVerified()"></div>
+          <label onclick="toggleVerified()">Verified badge</label>
+        </div>
+        <div class="field">
+          <label>Badge Color</label>
+          <select id="badgeColor" onchange="render()">
+            <option value="#1da1f2">Blue (default)</option>
+            <option value="#e8b230">Gold (org)</option>
+            <option value="#829aab">Grey (gov)</option>
+          </select>
+        </div>
+        <h2>Tweet Content</h2>
+        <div class="field">
+          <label>Text</label>
+          <textarea id="tweetText" oninput="render()">This is a fake tweet for a video. You can edit everything!</textarea>
+        </div>
+        <div class="field">
+          <label>Tweet Image</label>
+          <div class="btn-row">
+            <label class="file-btn">Upload Image <input type="file" accept="image/*" id="imageUpload" onchange="uploadFile(event, 'tweetImg')"></label>
+            <button class="remove-btn" onclick="removeFile('tweetImg')">Remove</button>
+          </div>
+        </div>
+        <h2>Timestamp</h2>
+        <div class="row">
+          <div class="field">
+            <label>Time</label>
+            <input type="text" id="tweetTime" value="4:20 PM" oninput="render()">
+          </div>
+          <div class="field">
+            <label>Date</label>
+            <input type="text" id="tweetDate" value="Mar 20, 2026" oninput="render()">
+          </div>
+        </div>
+        <div class="field">
+          <label>Client</label>
+          <input type="text" id="tweetClient" value="Twitter for iPhone" oninput="render()">
+        </div>
+        <h2>Metrics</h2>
+        <div class="row">
+          <div class="field">
+            <label>Reposts</label>
+            <input type="text" id="metricRetweets" value="12.4K" oninput="render()">
+          </div>
+          <div class="field">
+            <label>Quotes</label>
+            <input type="text" id="metricQuotes" value="1,843" oninput="render()">
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Likes</label>
+            <input type="text" id="metricLikes" value="84.2K" oninput="render()">
+          </div>
+          <div class="field">
+            <label>Bookmarks</label>
+            <input type="text" id="metricBookmarks" value="3,120" oninput="render()">
+          </div>
+        </div>
+        <div class="field">
+          <label>Views</label>
+          <input type="text" id="metricViews" value="2.1M" oninput="render()">
+        </div>
+        <h2>Appearance</h2>
+        <div class="toggle-row">
+          <div class="toggle active" id="darkToggle" onclick="toggleDark()"></div>
+          <label onclick="toggleDark()">Dark mode</label>
+        </div>
       </div>
 
-      <h2>Tweet Content</h2>
-      <div class="field">
-        <label>Text</label>
-        <textarea id="tweetText" oninput="render()">This is a fake tweet for a video. You can edit everything!</textarea>
-      </div>
-      <div class="field">
-        <label>Tweet Image</label>
-        <div class="btn-row">
-          <label class="file-btn">Upload Image <input type="file" accept="image/*" id="imageUpload" onchange="uploadImage(event)"></label>
-          <button class="remove-btn" onclick="removeImage()">Remove</button>
+      <!-- ── TMZ CONTROLS ── -->
+      <div class="template-controls" id="tmzControls">
+        <h2>Article</h2>
+        <div class="field">
+          <label>Category</label>
+          <input type="text" id="tmzCategory" value="EXCLUSIVE" oninput="render()">
+        </div>
+        <div class="field">
+          <label>Headline</label>
+          <textarea id="tmzHeadline" oninput="render()">Celebrity Caught Doing Something Absolutely Wild</textarea>
+        </div>
+        <div class="field">
+          <label>Body Text</label>
+          <textarea id="tmzBody" style="min-height:120px" oninput="render()">Sources close to the situation tell TMZ ... the incident happened late Thursday night at a popular Hollywood hotspot.
+
+We're told things escalated quickly when security got involved, and multiple witnesses captured the moment on their phones.
+
+Our sources say no one was injured, but the fallout is expected to be significant.</textarea>
+        </div>
+        <h2>Image</h2>
+        <div class="field">
+          <label>Hero Image</label>
+          <div class="btn-row">
+            <label class="file-btn">Upload Image <input type="file" accept="image/*" id="tmzImageUpload" onchange="uploadFile(event, 'tmzImg')"></label>
+            <button class="remove-btn" onclick="removeFile('tmzImg')">Remove</button>
+          </div>
+        </div>
+        <h2>Meta</h2>
+        <div class="field">
+          <label>Author</label>
+          <input type="text" id="tmzAuthor" value="TMZ Staff" oninput="render()">
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Date</label>
+            <input type="text" id="tmzDate" value="3/20/2026" oninput="render()">
+          </div>
+          <div class="field">
+            <label>Time</label>
+            <input type="text" id="tmzTime" value="4:20 PM PT" oninput="render()">
+          </div>
+        </div>
+        <div class="field">
+          <label>Tags (comma-separated)</label>
+          <input type="text" id="tmzTags" value="Celebrity, Hollywood, Exclusive" oninput="render()">
         </div>
       </div>
 
-      <h2>Timestamp</h2>
-      <div class="row">
-        <div class="field">
-          <label>Time</label>
-          <input type="text" id="tweetTime" value="4:20 PM" oninput="render()">
+      <!-- ── CNN CONTROLS ── -->
+      <div class="template-controls" id="cnnControls">
+        <h2>Breaking Banner</h2>
+        <div class="toggle-row">
+          <div class="toggle active" id="cnnBreakingToggle" onclick="toggleCnnBreaking()"></div>
+          <label onclick="toggleCnnBreaking()">Show breaking news banner</label>
         </div>
         <div class="field">
-          <label>Date</label>
-          <input type="text" id="tweetDate" value="Mar 20, 2026" oninput="render()">
+          <label>Breaking text</label>
+          <input type="text" id="cnnBreakingText" value="Major development in ongoing investigation" oninput="render()">
         </div>
-      </div>
-      <div class="field">
-        <label>Client</label>
-        <input type="text" id="tweetClient" value="Twitter for iPhone" oninput="render()">
-      </div>
+        <h2>Article</h2>
+        <div class="field">
+          <label>Headline</label>
+          <textarea id="cnnHeadline" oninput="render()">Federal authorities announce sweeping new policy that could impact millions</textarea>
+        </div>
+        <div class="field">
+          <label>Body Text</label>
+          <textarea id="cnnBody" style="min-height:120px" oninput="render()">Federal officials announced a sweeping new policy Friday that experts say could reshape the landscape for millions of Americans.
 
-      <h2>Metrics</h2>
-      <div class="row">
-        <div class="field">
-          <label>Reposts</label>
-          <input type="text" id="metricRetweets" value="12.4K" oninput="render()">
-        </div>
-        <div class="field">
-          <label>Quotes</label>
-          <input type="text" id="metricQuotes" value="1,843" oninput="render()">
-        </div>
-      </div>
-      <div class="row">
-        <div class="field">
-          <label>Likes</label>
-          <input type="text" id="metricLikes" value="84.2K" oninput="render()">
-        </div>
-        <div class="field">
-          <label>Bookmarks</label>
-          <input type="text" id="metricBookmarks" value="3,120" oninput="render()">
-        </div>
-      </div>
-      <div class="field">
-        <label>Views</label>
-        <input type="text" id="metricViews" value="2.1M" oninput="render()">
-      </div>
+The move, which has been months in the making according to multiple sources familiar with the matter, comes amid mounting pressure from advocacy groups and bipartisan lawmakers.
 
-      <h2>Appearance</h2>
-      <div class="toggle-row">
-        <div class="toggle active" id="darkToggle" onclick="toggleDark()"></div>
-        <label onclick="toggleDark()">Dark mode</label>
+"This is a historic moment," said a senior administration official who spoke on condition of anonymity. "The implications will be felt for years to come."</textarea>
+        </div>
+        <h2>Image</h2>
+        <div class="field">
+          <label>Hero Image</label>
+          <div class="btn-row">
+            <label class="file-btn">Upload Image <input type="file" accept="image/*" id="cnnImageUpload" onchange="uploadFile(event, 'cnnImg')"></label>
+            <button class="remove-btn" onclick="removeFile('cnnImg')">Remove</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Image Caption</label>
+          <input type="text" id="cnnCaption" value="Officials gather at the press conference Friday morning." oninput="render()">
+        </div>
+        <h2>Meta</h2>
+        <div class="field">
+          <label>Reporter Name</label>
+          <input type="text" id="cnnReporter" value="John King" oninput="render()">
+        </div>
+        <div class="field">
+          <label>Reporter Role</label>
+          <input type="text" id="cnnRole" value="CNN Senior Political Correspondent" oninput="render()">
+        </div>
+        <div class="field">
+          <label>Location Tag</label>
+          <input type="text" id="cnnLocation" value="Washington (CNN) —" oninput="render()">
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Date</label>
+            <input type="text" id="cnnDate" value="March 20, 2026" oninput="render()">
+          </div>
+          <div class="field">
+            <label>Time</label>
+            <input type="text" id="cnnTime" value="3:42 PM EST" oninput="render()">
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- ── Preview ── -->
+    <!-- ══════════ Preview ══════════ -->
     <div class="preview-area">
       <span class="preview-label">Preview</span>
 
-      <div class="tweet dark" id="tweetPreview">
-        <div class="tweet-header">
-          <img class="tweet-avatar" id="avatarImg" src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><rect width='40' height='40' rx='20' fill='%232f3336'/><text x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' fill='%23fff' font-size='18' font-family='sans-serif'>E</text></svg>">
-          <div class="tweet-user-info">
-            <div class="tweet-name-row">
-              <span class="tweet-display-name" id="tweetDisplayName">Elon Musk</span>
-              <!-- Verified badge SVG -->
-              <svg class="tweet-verified show" id="verifiedBadge" viewBox="0 0 22 22" fill="none">
-                <path d="M20.4 11l-1.547-1.782.216-2.35-2.298-.534L15.6 4.2l-2.2.924L11 3.6l-2.4 1.524L6.4 4.2 5.229 6.334l-2.298.534.216 2.35L1.6 11l1.547 1.782-.216 2.35 2.298.534L6.4 17.8l2.2-.924L11 18.4l2.4-1.524 2.2.924 1.171-2.134 2.298-.534-.216-2.35L20.4 11z" fill="#1da1f2"/>
-                <path d="M9.64 14.53l-2.69-2.69 1.06-1.06 1.63 1.63 4.38-4.38 1.06 1.06-5.44 5.44z" fill="#fff"/>
-              </svg>
-              <span class="tweet-handle" id="tweetHandle">@elonmusk</span>
+      <!-- ── TWEET PREVIEW ── -->
+      <div class="template-preview active" id="tweetPreviewWrap">
+        <div class="tweet dark" id="tweetPreview">
+          <div class="tweet-header">
+            <img class="tweet-avatar" id="avatarImg" src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><rect width='40' height='40' rx='20' fill='%232f3336'/><text x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' fill='%23fff' font-size='18' font-family='sans-serif'>E</text></svg>">
+            <div class="tweet-user-info">
+              <div class="tweet-name-row">
+                <span class="tweet-display-name" id="tweetDisplayName">Elon Musk</span>
+                <svg class="tweet-verified show" id="verifiedBadge" viewBox="0 0 22 22" fill="none">
+                  <path d="M20.4 11l-1.547-1.782.216-2.35-2.298-.534L15.6 4.2l-2.2.924L11 3.6l-2.4 1.524L6.4 4.2 5.229 6.334l-2.298.534.216 2.35L1.6 11l1.547 1.782-.216 2.35 2.298.534L6.4 17.8l2.2-.924L11 18.4l2.4-1.524 2.2.924 1.171-2.134 2.298-.534-.216-2.35L20.4 11z" fill="#1da1f2"/>
+                  <path d="M9.64 14.53l-2.69-2.69 1.06-1.06 1.63 1.63 4.38-4.38 1.06 1.06-5.44 5.44z" fill="#fff"/>
+                </svg>
+                <span class="tweet-handle" id="tweetHandle">@elonmusk</span>
+              </div>
+            </div>
+            <div class="tweet-more">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
             </div>
           </div>
-          <div class="tweet-more">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+          <div class="tweet-body">
+            <div class="tweet-text" id="tweetTextDisplay">This is a fake tweet for a video. You can edit everything!</div>
+            <div class="tweet-image-wrap" id="tweetImageWrap">
+              <img id="tweetImage" src="">
+            </div>
+            <div class="tweet-time" id="tweetTimestamp">
+              <a href="#">4:20 PM · Mar 20, 2026</a> · <a href="#" id="tweetClientDisplay">Twitter for iPhone</a>
+            </div>
+            <div class="tweet-stats">
+              <span><span class="tweet-stat-val" id="statRetweets">12.4K</span> <span class="tweet-stat-label">Reposts</span></span>
+              <span><span class="tweet-stat-val" id="statQuotes">1,843</span> <span class="tweet-stat-label">Quotes</span></span>
+              <span><span class="tweet-stat-val" id="statLikes">84.2K</span> <span class="tweet-stat-label">Likes</span></span>
+              <span><span class="tweet-stat-val" id="statBookmarks">3,120</span> <span class="tweet-stat-label">Bookmarks</span></span>
+              <span><span class="tweet-stat-val" id="statViews">2.1M</span> <span class="tweet-stat-label">Views</span></span>
+            </div>
+            <div class="tweet-actions">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1.751 10c.003-.996.49-1.97 1.367-2.55L12.63 1.35c1.208-.8 2.87-.13 2.87 1.35v4.1c4.922.184 8.5 2.06 8.5 7.2 0 3.2-1.882 5.077-3.758 6.19-.39.23-.9-.075-.84-.52.361-2.7-.614-4.32-3.902-4.82v4.1c0 1.48-1.662 2.15-2.87 1.35L3.118 14.55A3.12 3.12 0 011.75 12v-2z"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4.5 3.88l4.432 4.14-1.364 1.46L5.5 7.55V16c0 1.1.896 2 2 2h4v2H7.5c-2.209 0-4-1.791-4-4V7.55L1.432 9.48.068 8.02 4.5 3.88zM16.5 6H20v-2h-3.5c-2.209 0-4 1.791-4 4v8.45l-2.068-1.93-1.364 1.46 4.432 4.14 4.432-4.14-1.364-1.46L14.5 16.45V8c0-1.1.896-2 2-2z"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.697 5.5c-1.222-.06-2.679.51-3.89 2.16l-.807 1.1-.806-1.1C10.01 6.01 8.756 5.44 7.502 5.5c-1.906.1-3.479 1.578-3.5 3.51-.023 2.08 1.099 3.88 2.647 5.383 1.31 1.272 2.904 2.394 4.291 3.326l.36.244.36-.244c1.388-.932 2.981-2.054 4.292-3.326 1.548-1.503 2.67-3.303 2.647-5.383-.02-1.932-1.594-3.41-3.5-3.51z"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4.5C4 3.12 5.119 2 6.5 2h11C18.881 2 20 3.12 20 4.5v18.44l-8-5.71-8 5.71V4.5z"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2.59l5.7 5.7-1.41 1.42L13 6.41V16h-2V6.41L7.71 9.71 6.3 8.29 12 2.59zM21 15l-.001 3.78c0 1.34-1.08 2.42-2.42 2.42H5.42C4.077 21.2 3 20.12 3 18.78V15h2v3.78c0 .23.19.42.42.42h13.16c.23 0 .42-.19.42-.42V15h2z"/></svg>
+            </div>
           </div>
         </div>
+      </div>
 
-        <div class="tweet-body">
-          <div class="tweet-text" id="tweetTextDisplay">This is a fake tweet for a video. You can edit everything!</div>
-          <div class="tweet-image-wrap" id="tweetImageWrap">
-            <img id="tweetImage" src="">
+      <!-- ── TMZ PREVIEW ── -->
+      <div class="template-preview" id="tmzPreviewWrap">
+        <div class="tmz-article" id="tmzPreview">
+          <div class="tmz-nav">
+            <div class="tmz-logo">TMZ</div>
+            <div class="tmz-nav-links">
+              <span>News</span><span>Sports</span><span>Hip Hop</span><span>Tours</span>
+            </div>
           </div>
-          <div class="tweet-time" id="tweetTimestamp">
-            <a href="#">4:20 PM · Mar 20, 2026</a> · <a href="#" id="tweetClientDisplay">Twitter for iPhone</a>
-          </div>
+          <img class="tmz-hero-img hidden" id="tmzHeroImg" src="">
+          <div class="tmz-content">
+            <div class="tmz-category" id="tmzCategoryDisplay">EXCLUSIVE</div>
+            <div class="tmz-headline" id="tmzHeadlineDisplay">Celebrity Caught Doing Something Absolutely Wild</div>
+            <div class="tmz-meta">
+              <span class="tmz-byline-name" id="tmzAuthorDisplay">TMZ Staff</span>
+              <span class="tmz-meta-sep">|</span>
+              <span id="tmzDateDisplay">3/20/2026</span>
+              <span class="tmz-meta-sep">|</span>
+              <span id="tmzTimeDisplay">4:20 PM PT</span>
+            </div>
+            <div class="tmz-body-text" id="tmzBodyDisplay">Sources close to the situation tell TMZ ... the incident happened late Thursday night at a popular Hollywood hotspot.
 
-          <div class="tweet-stats" id="tweetStats">
-            <span><span class="tweet-stat-val" id="statRetweets">12.4K</span> <span class="tweet-stat-label">Reposts</span></span>
-            <span><span class="tweet-stat-val" id="statQuotes">1,843</span> <span class="tweet-stat-label">Quotes</span></span>
-            <span><span class="tweet-stat-val" id="statLikes">84.2K</span> <span class="tweet-stat-label">Likes</span></span>
-            <span><span class="tweet-stat-val" id="statBookmarks">3,120</span> <span class="tweet-stat-label">Bookmarks</span></span>
-            <span><span class="tweet-stat-val" id="statViews">2.1M</span> <span class="tweet-stat-label">Views</span></span>
-          </div>
+We're told things escalated quickly when security got involved, and multiple witnesses captured the moment on their phones.
 
-          <div class="tweet-actions">
-            <!-- Reply -->
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1.751 10c.003-.996.49-1.97 1.367-2.55L12.63 1.35c1.208-.8 2.87-.13 2.87 1.35v4.1c4.922.184 8.5 2.06 8.5 7.2 0 3.2-1.882 5.077-3.758 6.19-.39.23-.9-.075-.84-.52.361-2.7-.614-4.32-3.902-4.82v4.1c0 1.48-1.662 2.15-2.87 1.35L3.118 14.55A3.12 3.12 0 011.75 12v-2z"/></svg>
-            <!-- Repost -->
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4.5 3.88l4.432 4.14-1.364 1.46L5.5 7.55V16c0 1.1.896 2 2 2h4v2H7.5c-2.209 0-4-1.791-4-4V7.55L1.432 9.48.068 8.02 4.5 3.88zM16.5 6H20v-2h-3.5c-2.209 0-4 1.791-4 4v8.45l-2.068-1.93-1.364 1.46 4.432 4.14 4.432-4.14-1.364-1.46L14.5 16.45V8c0-1.1.896-2 2-2z"/></svg>
-            <!-- Like -->
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.697 5.5c-1.222-.06-2.679.51-3.89 2.16l-.807 1.1-.806-1.1C10.01 6.01 8.756 5.44 7.502 5.5c-1.906.1-3.479 1.578-3.5 3.51-.023 2.08 1.099 3.88 2.647 5.383 1.31 1.272 2.904 2.394 4.291 3.326l.36.244.36-.244c1.388-.932 2.981-2.054 4.292-3.326 1.548-1.503 2.67-3.303 2.647-5.383-.02-1.932-1.594-3.41-3.5-3.51z"/></svg>
-            <!-- Bookmark -->
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4.5C4 3.12 5.119 2 6.5 2h11C18.881 2 20 3.12 20 4.5v18.44l-8-5.71-8 5.71V4.5z"/></svg>
-            <!-- Share -->
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2.59l5.7 5.7-1.41 1.42L13 6.41V16h-2V6.41L7.71 9.71 6.3 8.29 12 2.59zM21 15l-.001 3.78c0 1.34-1.08 2.42-2.42 2.42H5.42C4.077 21.2 3 20.12 3 18.78V15h2v3.78c0 .23.19.42.42.42h13.16c.23 0 .42-.19.42-.42V15h2z"/></svg>
+Our sources say no one was injured, but the fallout is expected to be significant.</div>
+            <div class="tmz-tags" id="tmzTagsDisplay">
+              <span class="tmz-tag">Celebrity</span>
+              <span class="tmz-tag">Hollywood</span>
+              <span class="tmz-tag">Exclusive</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CNN PREVIEW ── -->
+      <div class="template-preview" id="cnnPreviewWrap">
+        <div class="cnn-article" id="cnnPreview">
+          <div class="cnn-topbar">
+            <div class="cnn-logo">CNN</div>
+            <div class="cnn-topbar-links">
+              <span>U.S.</span><span>World</span><span>Politics</span><span>Business</span><span>Health</span>
+            </div>
+          </div>
+          <div class="cnn-breaking-banner" id="cnnBreakingBanner">
+            <span class="cnn-breaking-tag">Breaking News</span>
+            <span class="cnn-breaking-text" id="cnnBreakingTextDisplay">Major development in ongoing investigation</span>
+          </div>
+          <img class="cnn-hero-img hidden" id="cnnHeroImg" src="">
+          <div class="cnn-caption hidden" id="cnnCaptionDisplay">Officials gather at the press conference Friday morning.</div>
+          <div class="cnn-content">
+            <div class="cnn-headline" id="cnnHeadlineDisplay">Federal authorities announce sweeping new policy that could impact millions</div>
+            <div class="cnn-byline">
+              By <span class="cnn-byline-name" id="cnnReporterDisplay">John King</span>, <span class="cnn-byline-role" id="cnnRoleDisplay">CNN Senior Political Correspondent</span>
+            </div>
+            <div class="cnn-timestamp">
+              Updated <span id="cnnTimeDisplay">3:42 PM EST</span>, <span id="cnnDateDisplay">March 20, 2026</span>
+            </div>
+            <div class="cnn-body-text" id="cnnBodyDisplay"><span class="cnn-location" id="cnnLocationDisplay">Washington (CNN) —</span> Federal officials announced a sweeping new policy Friday that experts say could reshape the landscape for millions of Americans.
+
+The move, which has been months in the making according to multiple sources familiar with the matter, comes amid mounting pressure from advocacy groups and bipartisan lawmakers.
+
+"This is a historic moment," said a senior administration official who spoke on condition of anonymity. "The implications will be felt for years to come."</div>
           </div>
         </div>
       </div>
@@ -491,55 +681,94 @@
     </div>
   </div>
 
-  <!-- html2canvas for the save-as-PNG feature -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script>
-    // State
+    /* ── State ── */
+    let currentTemplate = 'tweet';
     let verified = true;
     let darkMode = true;
-    let avatarDataUrl = null;
-    let imageDataUrl = null;
+    let cnnBreaking = true;
 
+    const files = { avatar: null, tweetImg: null, tmzImg: null, cnnImg: null };
+
+    /* ── Template Switching ── */
+    function switchTemplate(tpl) {
+      currentTemplate = tpl;
+      document.querySelectorAll('.template-btn').forEach(b => {
+        b.className = 'template-btn' + (b.dataset.tpl === tpl ? ' active-' + tpl : '');
+      });
+      document.querySelectorAll('.template-controls').forEach(c => c.classList.remove('active'));
+      document.querySelectorAll('.template-preview').forEach(p => p.classList.remove('active'));
+      document.getElementById(tpl + 'Controls').classList.add('active');
+      document.getElementById(tpl + 'PreviewWrap').classList.add('active');
+      const panel = document.getElementById('controlsPanel');
+      panel.className = 'controls' + (tpl === 'tmz' ? ' tmz-mode' : tpl === 'cnn' ? ' cnn-mode' : '');
+      render();
+    }
+
+    /* ── File Upload/Remove ── */
+    function uploadFile(e, key) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => { files[key] = ev.target.result; render(); };
+      reader.readAsDataURL(file);
+    }
+    function removeFile(key) {
+      files[key] = null;
+      const inputMap = { avatar: 'avatarUpload', tweetImg: 'imageUpload', tmzImg: 'tmzImageUpload', cnnImg: 'cnnImageUpload' };
+      if (inputMap[key]) document.getElementById(inputMap[key]).value = '';
+      if (key === 'avatar') {
+        document.getElementById('avatarImg').src = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><rect width='40' height='40' rx='20' fill='%232f3336'/><text x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' fill='%23fff' font-size='18' font-family='sans-serif'>?</text></svg>";
+      }
+      render();
+    }
+
+    /* ── Toggles ── */
+    function toggleVerified() {
+      verified = !verified;
+      document.getElementById('verifiedToggle').classList.toggle('active', verified);
+      render();
+    }
+    function toggleDark() {
+      darkMode = !darkMode;
+      document.getElementById('darkToggle').classList.toggle('active', darkMode);
+      render();
+    }
+    function toggleCnnBreaking() {
+      cnnBreaking = !cnnBreaking;
+      document.getElementById('cnnBreakingToggle').classList.toggle('active', cnnBreaking);
+      render();
+    }
+
+    /* ── Render ── */
     function render() {
+      renderTweet();
+      renderTmz();
+      renderCnn();
+    }
+
+    function renderTweet() {
       const tweet = document.getElementById('tweetPreview');
-      // Theme
       tweet.classList.toggle('dark', darkMode);
       tweet.classList.toggle('light', !darkMode);
-
-      // Name / handle
       document.getElementById('tweetDisplayName').textContent = document.getElementById('displayName').value;
       const h = document.getElementById('handle').value.replace(/^@/, '');
       document.getElementById('tweetHandle').textContent = '@' + h;
-
-      // Verified
       const badge = document.getElementById('verifiedBadge');
       badge.classList.toggle('show', verified);
       badge.querySelector('path').setAttribute('fill', document.getElementById('badgeColor').value);
-
-      // Avatar
-      if (avatarDataUrl) {
-        document.getElementById('avatarImg').src = avatarDataUrl;
-      }
-
-      // Text
+      if (files.avatar) document.getElementById('avatarImg').src = files.avatar;
       document.getElementById('tweetTextDisplay').textContent = document.getElementById('tweetText').value;
-
-      // Image
       const wrap = document.getElementById('tweetImageWrap');
-      if (imageDataUrl) {
-        document.getElementById('tweetImage').src = imageDataUrl;
+      if (files.tweetImg) {
+        document.getElementById('tweetImage').src = files.tweetImg;
         wrap.classList.add('show');
-      } else {
-        wrap.classList.remove('show');
-      }
-
-      // Timestamp
+      } else { wrap.classList.remove('show'); }
       const time = document.getElementById('tweetTime').value;
       const date = document.getElementById('tweetDate').value;
       document.getElementById('tweetTimestamp').querySelector('a').textContent = time + ' · ' + date;
       document.getElementById('tweetClientDisplay').textContent = document.getElementById('tweetClient').value;
-
-      // Stats
       document.getElementById('statRetweets').textContent = document.getElementById('metricRetweets').value;
       document.getElementById('statQuotes').textContent = document.getElementById('metricQuotes').value;
       document.getElementById('statLikes').textContent = document.getElementById('metricLikes').value;
@@ -547,67 +776,75 @@
       document.getElementById('statViews').textContent = document.getElementById('metricViews').value;
     }
 
-    function toggleVerified() {
-      verified = !verified;
-      document.getElementById('verifiedToggle').classList.toggle('active', verified);
-      render();
+    function renderTmz() {
+      document.getElementById('tmzCategoryDisplay').textContent = document.getElementById('tmzCategory').value;
+      document.getElementById('tmzHeadlineDisplay').textContent = document.getElementById('tmzHeadline').value;
+      document.getElementById('tmzBodyDisplay').textContent = document.getElementById('tmzBody').value;
+      document.getElementById('tmzAuthorDisplay').textContent = document.getElementById('tmzAuthor').value;
+      document.getElementById('tmzDateDisplay').textContent = document.getElementById('tmzDate').value;
+      document.getElementById('tmzTimeDisplay').textContent = document.getElementById('tmzTime').value;
+      const heroImg = document.getElementById('tmzHeroImg');
+      if (files.tmzImg) { heroImg.src = files.tmzImg; heroImg.classList.remove('hidden'); }
+      else { heroImg.classList.add('hidden'); }
+      // Tags
+      const tagsStr = document.getElementById('tmzTags').value;
+      const tagsEl = document.getElementById('tmzTagsDisplay');
+      tagsEl.innerHTML = '';
+      tagsStr.split(',').map(t => t.trim()).filter(Boolean).forEach(t => {
+        const span = document.createElement('span');
+        span.className = 'tmz-tag';
+        span.textContent = t;
+        tagsEl.appendChild(span);
+      });
     }
 
-    function toggleDark() {
-      darkMode = !darkMode;
-      document.getElementById('darkToggle').classList.toggle('active', darkMode);
-      render();
+    function renderCnn() {
+      const banner = document.getElementById('cnnBreakingBanner');
+      banner.classList.toggle('hidden', !cnnBreaking);
+      document.getElementById('cnnBreakingTextDisplay').textContent = document.getElementById('cnnBreakingText').value;
+      document.getElementById('cnnHeadlineDisplay').textContent = document.getElementById('cnnHeadline').value;
+      document.getElementById('cnnReporterDisplay').textContent = document.getElementById('cnnReporter').value;
+      document.getElementById('cnnRoleDisplay').textContent = document.getElementById('cnnRole').value;
+      document.getElementById('cnnDateDisplay').textContent = document.getElementById('cnnDate').value;
+      document.getElementById('cnnTimeDisplay').textContent = document.getElementById('cnnTime').value;
+      // Body with location prefix
+      const loc = document.getElementById('cnnLocation').value;
+      const body = document.getElementById('cnnBody').value;
+      const bodyEl = document.getElementById('cnnBodyDisplay');
+      const locEl = document.getElementById('cnnLocationDisplay');
+      locEl.textContent = loc + ' ';
+      // Set the text after the location span
+      bodyEl.innerHTML = '';
+      bodyEl.appendChild(locEl);
+      bodyEl.appendChild(document.createTextNode(body));
+      // Caption
+      const captionVal = document.getElementById('cnnCaption').value;
+      const captionEl = document.getElementById('cnnCaptionDisplay');
+      captionEl.textContent = captionVal;
+      // Image
+      const heroImg = document.getElementById('cnnHeroImg');
+      if (files.cnnImg) {
+        heroImg.src = files.cnnImg;
+        heroImg.classList.remove('hidden');
+        captionEl.classList.remove('hidden');
+      } else {
+        heroImg.classList.add('hidden');
+        captionEl.classList.add('hidden');
+      }
     }
 
-    function uploadAvatar(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(ev) {
-        avatarDataUrl = ev.target.result;
-        render();
-      };
-      reader.readAsDataURL(file);
-    }
-
-    function removeAvatar() {
-      avatarDataUrl = null;
-      document.getElementById('avatarImg').src = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><rect width='40' height='40' rx='20' fill='%232f3336'/><text x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' fill='%23fff' font-size='18' font-family='sans-serif'>?</text></svg>";
-      document.getElementById('avatarUpload').value = '';
-    }
-
-    function uploadImage(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(ev) {
-        imageDataUrl = ev.target.result;
-        render();
-      };
-      reader.readAsDataURL(file);
-    }
-
-    function removeImage() {
-      imageDataUrl = null;
-      document.getElementById('imageUpload').value = '';
-      render();
-    }
-
+    /* ── Screenshot ── */
     function saveScreenshot() {
-      const el = document.getElementById('tweetPreview');
-      html2canvas(el, {
-        backgroundColor: null,
-        scale: 2,
-        useCORS: true,
-      }).then(canvas => {
+      const targets = { tweet: 'tweetPreview', tmz: 'tmzPreview', cnn: 'cnnPreview' };
+      const el = document.getElementById(targets[currentTemplate]);
+      html2canvas(el, { backgroundColor: null, scale: 2, useCORS: true }).then(canvas => {
         const link = document.createElement('a');
-        link.download = 'tweet.png';
+        link.download = currentTemplate + '-screenshot.png';
         link.href = canvas.toDataURL('image/png');
         link.click();
       });
     }
 
-    // Initial render
     render();
   </script>
 </body>
