@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Fake Screenshot Generator</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Roboto:wght@400;500;700;900&family=CNN:wght@700;900&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Roboto:wght@400;500;700;900&family=Oswald:wght@400;500;600;700&display=swap');
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -210,61 +210,74 @@
 
   /* ═══════════ TMZ STYLES ═══════════ */
   .tmz-article {
-    width: 100%; max-width: 650px; background: #fff; color: #000;
+    width: 100%; max-width: 650px; background: #f4f4f4; color: #000;
     font-family: 'Inter', Helvetica, Arial, sans-serif;
     overflow: hidden;
   }
   .tmz-nav {
-    background: #000; padding: 10px 16px;
-    display: flex; align-items: center; justify-content: space-between;
+    background: #000; padding: 0 16px;
+    display: flex; align-items: center; height: 50px;
+    gap: 24px;
   }
   .tmz-logo {
-    font-family: 'Inter', Impact, sans-serif;
-    font-weight: 900; font-size: 32px; color: #f5c518;
-    letter-spacing: 2px; text-transform: uppercase;
+    font-family: 'Oswald', Impact, sans-serif;
+    font-weight: 700; font-size: 30px; color: #fc0;
+    letter-spacing: 3px; text-transform: uppercase;
     line-height: 1;
   }
   .tmz-nav-links {
-    display: flex; gap: 16px; font-size: 11px;
-    color: #999; text-transform: uppercase; letter-spacing: 1px;
+    display: flex; gap: 18px; font-size: 12px;
+    color: #aaa; text-transform: uppercase; letter-spacing: 0.5px;
+    font-weight: 500;
   }
+  .tmz-nav-links span { cursor: default; }
   .tmz-hero-img {
     width: 100%; max-height: 400px; object-fit: cover;
     display: block; background: #222;
   }
   .tmz-hero-img.hidden { display: none; }
-  .tmz-content { padding: 20px 24px 24px; }
+  .tmz-content {
+    padding: 20px 24px 24px;
+    background: #fff;
+  }
   .tmz-category {
-    font-size: 11px; font-weight: 700; color: #f5c518;
-    text-transform: uppercase; letter-spacing: 1.5px;
-    margin-bottom: 8px;
+    font-family: 'Oswald', Impact, sans-serif;
+    font-size: 13px; font-weight: 600; color: #fc0;
+    text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 10px;
   }
   .tmz-headline {
-    font-size: 28px; font-weight: 900; line-height: 1.15;
-    color: #000; margin-bottom: 12px;
-    font-family: 'Inter', Impact, sans-serif;
+    font-family: 'Oswald', Impact, sans-serif;
+    font-size: 36px; font-weight: 700; line-height: 1.1;
+    color: #000; margin-bottom: 4px;
+    text-transform: uppercase;
+  }
+  .tmz-subheadline {
+    font-family: 'Oswald', Impact, sans-serif;
+    font-size: 20px; font-weight: 400; line-height: 1.25;
+    color: #555; margin-bottom: 14px;
     text-transform: uppercase;
   }
   .tmz-meta {
-    font-size: 12px; color: #999; margin-bottom: 16px;
+    font-size: 12px; color: #999; margin-bottom: 18px;
     display: flex; gap: 8px; align-items: center;
   }
   .tmz-meta-sep { color: #ccc; }
   .tmz-byline-name { color: #666; font-weight: 500; }
   .tmz-body-text {
-    font-size: 16px; line-height: 1.7; color: #333;
+    font-size: 16px; line-height: 1.75; color: #333;
     white-space: pre-wrap; word-wrap: break-word;
   }
   .tmz-body-text b { color: #000; }
   .tmz-tags {
     margin-top: 20px; padding-top: 16px;
-    border-top: 2px solid #f5c518;
+    border-top: 3px solid #fc0;
     display: flex; gap: 8px; flex-wrap: wrap;
   }
   .tmz-tag {
-    background: #f0f0f0; color: #333; padding: 4px 12px;
-    border-radius: 4px; font-size: 12px; font-weight: 500;
-    text-transform: uppercase;
+    background: #f0f0f0; color: #333; padding: 5px 14px;
+    border-radius: 3px; font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.5px;
   }
 
   /* ═══════════ CNN STYLES ═══════════ */
@@ -459,8 +472,12 @@
           <input type="text" id="tmzCategory" value="EXCLUSIVE" oninput="render()">
         </div>
         <div class="field">
-          <label>Headline</label>
+          <label>Main Headline</label>
           <textarea id="tmzHeadline" oninput="render()">Celebrity Caught Doing Something Absolutely Wild</textarea>
+        </div>
+        <div class="field">
+          <label>Sub-headline</label>
+          <input type="text" id="tmzSubheadline" value="Witnesses Say It Was Total Chaos" oninput="render()">
         </div>
         <div class="field">
           <label>Body Text</label>
@@ -628,6 +645,7 @@ The move, which has been months in the making according to multiple sources fami
           <div class="tmz-content">
             <div class="tmz-category" id="tmzCategoryDisplay">EXCLUSIVE</div>
             <div class="tmz-headline" id="tmzHeadlineDisplay">Celebrity Caught Doing Something Absolutely Wild</div>
+            <div class="tmz-subheadline" id="tmzSubheadlineDisplay">Witnesses Say It Was Total Chaos</div>
             <div class="tmz-meta">
               <span class="tmz-byline-name" id="tmzAuthorDisplay">TMZ Staff</span>
               <span class="tmz-meta-sep">|</span>
@@ -784,6 +802,7 @@ The move, which has been months in the making according to multiple sources fami
     function renderTmz() {
       document.getElementById('tmzCategoryDisplay').textContent = document.getElementById('tmzCategory').value;
       document.getElementById('tmzHeadlineDisplay').textContent = document.getElementById('tmzHeadline').value;
+      document.getElementById('tmzSubheadlineDisplay').textContent = document.getElementById('tmzSubheadline').value;
       document.getElementById('tmzBodyDisplay').textContent = document.getElementById('tmzBody').value;
       document.getElementById('tmzAuthorDisplay').textContent = document.getElementById('tmzAuthor').value;
       document.getElementById('tmzDateDisplay').textContent = document.getElementById('tmzDate').value;
